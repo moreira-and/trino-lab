@@ -205,3 +205,117 @@ Não trate Trino como “mais um banco”.
 
 Ele é uma **engine distribuída de query**, desacoplada do storage.
 Esse detalhe muda tudo.
+
+## Arquitetura de Catálogos e Responsabilidades
+
+```text
++----------------------+
+|        Trino         |
+|  Engine SQL Unificada|
++----------------------+
+        |        |
+        |        |
+        v        v
+
++---------------+     +------------------+
+| Catalog       |     | Catalog          |
+| iceberg       |     | postgresql       |
++---------------+     +------------------+
+        |                        |
+        v                        v
+
++------------------+     +------------------+
+| PostgreSQL DB    |     | PostgreSQL DB    |
+| metastore        |     | lab              |
++------------------+     +------------------+
+        |
+        v
++------------------+
+| MinIO / S3       |
+| Data Files       |
++------------------+
+```
+
+### Responsabilidade de cada catálogo
+
+#### `iceberg`
+
+Catálogo analítico/lakehouse utilizado para tabelas modernas em object storage.
+
+Responsável por:
+
+- governança de tabelas analíticas
+- versionamento e snapshots
+- schema evolution
+- controle transacional de metadata
+- leitura/escrita de dados no MinIO
+
+O PostgreSQL `metastore` armazena apenas metadados técnicos.
+Os dados reais ficam no MinIO.
+
+---
+
+#### `postgresql`
+
+Catálogo relacional utilizado para acesso direto ao banco PostgreSQL tradicional.
+
+Responsável por:
+
+- consultas relacionais clássicas
+- tabelas operacionais
+- dados de teste
+- joins com outras fontes via Trino
+- simulação de workloads OLTP / marts
+
+O database `lab` contém os dados consumidos diretamente pelo engenheiro.
+
+---
+
+### Motivo da arquitetura
+
+A separação existe para respeitar responsabilidades distintas.
+
+#### Metadata ≠ Dados operacionais
+
+Misturar metadata do Iceberg com tabelas de negócio no mesmo database aumenta acoplamento e dificulta administração.
+
+#### Lakehouse ≠ Banco relacional
+
+Cada tecnologia resolve problemas diferentes:
+
+- PostgreSQL: excelente para workloads transacionais e estruturas relacionais
+- Iceberg + MinIO: excelente para analytics escalável sobre arquivos
+
+#### Engine única de consulta
+
+O Trino atua como camada SQL única, permitindo consultar tudo com a mesma interface.
+
+Exemplo:
+
+```sql
+SELECT *
+FROM iceberg.analytics.vendas a
+JOIN postgresql.public.clientes b
+  ON a.cliente_id = b.id;
+```
+
+---
+
+### Benefícios desta abordagem
+
+- separação clara de responsabilidades
+- arquitetura próxima de cenários reais de mercado
+- fácil expansão para novos conectores
+- menor acoplamento entre storage e compute
+- laboratório ideal para estudo de lakehouse moderno
+
+---
+
+### Resumo executivo
+
+```text
+Trino consulta.
+Iceberg governa tabelas analíticas.
+MinIO armazena arquivos.
+PostgreSQL armazena metadata e dados relacionais.
+```
