@@ -239,15 +239,20 @@ trino-lab/
 ├── .gitignore                   Exclui .env, .codespaces/*, volumes
 │
 ├── single/etc/                  Configuração Trino single-node
-│   ├── generated/               Config gerada a partir de `.env`
-│   ├── templates/               Templates de config para renderização
+│   ├── templates/               Templates de config para renderização via script
+│   │   ├── config.properties.template
 │   │   └── catalog/
-│   ├── node.properties          Node identity
-│   ├── jvm.config               JVM tuning
+│   │       ├── iceberg.properties.template
+│   │       └── postgresql.properties.template
+│   ├── node.properties          Node identity (estático)
+│   ├── jvm.config               JVM tuning (estático)
+│   ├── config.properties        Gerado via render-config.py (ignorado pelo git)
 │   │
-│   └── catalog/                 Conectores Trino
-│       ├── tpch.properties      TPCH synthetic data
-│       └── memory.properties    In-memory cache
+│   └── catalog/
+│       ├── iceberg.properties   Gerado via render-config.py (ignorado pelo git)
+│       ├── postgresql.properties Gerado via render-config.py (ignorado pelo git)
+│       ├── tpch.properties      TPCH synthetic data (estático)
+│       └── memory.properties    In-memory cache (estático)
 │
 ├── .postgres/init/              PostgreSQL initialization scripts
 │   └── 01-init.sql              Cria databases nessie + lab
@@ -293,9 +298,9 @@ cp .env.example .env
 
 - Centralizar configurações operacionais em `.env`.
 - Usar `.env.example` apenas como modelo de valores.
-- Não commitar segredos reais no repositório.
-- Gerar configurações do Trino em `single/etc/generated/`.
-- Manter o pipeline de startup previsível e reproduzível.
+- Não commitar segredos reais no repositório (`.env` está em `.gitignore`).
+- Arquivos de config gerados (`config.properties`, `catalog/*.properties`) são ignorados pelo git.
+- Manter o pipeline de startup previsível: `.env` → `render-config.py` → `docker compose`.
 
 ### **2.2 Atalho com Makefile**
 
@@ -304,28 +309,23 @@ make init-env      # cria .env a partir de .env.example se ainda não existir
 make render-config # gera os arquivos de configuração do Trino
 ```
 
-### **3. Gerar configurações Trino**
-
-```bash
-python3 scripts/render-config.py
-```
-
-### **4. Subir Containers**
-
-```bash
-docker compose -f compose.yaml up -d
-```
-
-ou com Makefile:
+### **3. Subir Containers e Gerar Configs Automaticamente**
 
 ```bash
 make up
 ```
 
-ou use o fluxo completo:
+Ou use o fluxo completo (init-env + render-config + up):
 
 ```bash
 make start
+```
+
+Ou manualmente:
+
+```bash
+python3 scripts/render-config.py
+docker compose -f compose.yaml up -d
 ```
 
 **Output esperado:**
@@ -339,7 +339,7 @@ make start
  ✔ trino-single
 ```
 
-### **5. Validar Status**
+### **4. Validar Status**
 
 ```bash
 docker compose ps
@@ -355,7 +355,7 @@ nessie            ghcr.io/.../nessie:latest      Up 1 minute
 trino-single      trinodb/trino:477               Up 30 seconds
 ```
 
-### **4. Validar Conectividade**
+### **5. Validar Conectividade**
 
 ```bash
 curl http://localhost:8080/v1/info
@@ -367,7 +367,7 @@ curl http://localhost:8080/v1/info
 { "nodeVersion": { "version": "477.0" } }
 ```
 
-### **5. Acessar WebUI Trino**
+### **6. Acessar WebUI Trino**
 
 Browser:
 
@@ -377,7 +377,7 @@ http://localhost:8080
 
 (Mostra queries em tempo real, nós ativos, etc.)
 
-### **6. Acessar MinIO Console**
+### **7. Acessar MinIO Console**
 
 ```
 http://localhost:9001
@@ -390,7 +390,9 @@ http://localhost:9001
 
 ---
 
-## Executar Seu Primeiro SQL
+## Seu Primeiro SQL
+
+Agora que o ambiente está subido, teste os comandos no CLI do Trino.
 
 ### **Acesso ao CLI Trino**
 
