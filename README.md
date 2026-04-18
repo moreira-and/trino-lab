@@ -229,22 +229,23 @@ sequenceDiagram
 
 ```
 trino-lab/
-├── docker-compose.yml          Orquestração 5 serviços
+├── Makefile                    Comandos de inicialização
+├── compose.yaml                Orquestração 5 serviços
 ├── README.md                    Documentação principal
 ├── LICENSE                      MIT
 │
-├── .env                         Variáveis de ambiente
-├── .env.example                 Template de .env
+├── .env                         Variáveis de ambiente locais em uso
+├── .env.example                 Exemplo de template de configuração (não carregado diretamente)
 ├── .gitignore                   Exclui .env, .codespaces/*, volumes
 │
 ├── single/etc/                  Configuração Trino single-node
-│   ├── config.properties        Coordinator config
+│   ├── generated/               Config gerada a partir de `.env`
+│   ├── templates/               Templates de config para renderização
+│   │   └── catalog/
 │   ├── node.properties          Node identity
 │   ├── jvm.config               JVM tuning
 │   │
 │   └── catalog/                 Conectores Trino
-│       ├── iceberg.properties   Iceberg + Nessie + MinIO config
-│       ├── postgresql.properties PostgreSQL connector
 │       ├── tpch.properties      TPCH synthetic data
 │       └── memory.properties    In-memory cache
 │
@@ -266,6 +267,7 @@ trino-lab/
 ### **Pré-requisitos**
 
 - Docker + Docker Compose
+- Python 3 (para gerar configs do Trino)
 - 4GB RAM disponível (JVM 1GB + containers)
 - 10GB de espaço em disco (para persistência)
 
@@ -276,10 +278,54 @@ git clone https://github.com/moreira-and/trino-lab.git
 cd trino-lab
 ```
 
-### **2. Subir Containers**
+### **2. Ajustar variáveis de ambiente**
+
+Copie `.env.example` para `.env` e customize os valores antes de gerar a configuração.
 
 ```bash
-docker compose up -d
+cp .env.example .env
+# editar .env conforme necessário
+```
+
+> `.env.example` é um template de referência. O arquivo carregado pelo fluxo é `.env`.
+
+### **2.1 Boas práticas de configuração**
+
+- Centralizar configurações operacionais em `.env`.
+- Usar `.env.example` apenas como modelo de valores.
+- Não commitar segredos reais no repositório.
+- Gerar configurações do Trino em `single/etc/generated/`.
+- Manter o pipeline de startup previsível e reproduzível.
+
+### **2.2 Atalho com Makefile**
+
+```bash
+make init-env      # cria .env a partir de .env.example se ainda não existir
+make render-config # gera os arquivos de configuração do Trino
+```
+
+### **3. Gerar configurações Trino**
+
+```bash
+python3 scripts/render-config.py
+```
+
+### **4. Subir Containers**
+
+```bash
+docker compose -f compose.yaml up -d
+```
+
+ou com Makefile:
+
+```bash
+make up
+```
+
+ou use o fluxo completo:
+
+```bash
+make start
 ```
 
 **Output esperado:**
@@ -293,7 +339,7 @@ docker compose up -d
  ✔ trino-single
 ```
 
-### **3. Validar Status**
+### **5. Validar Status**
 
 ```bash
 docker compose ps
@@ -337,7 +383,7 @@ http://localhost:8080
 http://localhost:9001
 ```
 
-**Credenciais:**
+**Credenciais de desenvolvimento** (ajustáveis em `.env`):
 
 - User: `admin`
 - Password: `admin12345`
@@ -434,51 +480,20 @@ exit;
 
 ## Trilha de Estudo Recomendada
 
-Este laboratório foi projetado para **educação prática e progressiva**.
+Este laboratório é focado em aprendizado prático com arquitetura lakehouse moderna.
 
-**Tempo total:** ~9 horas para competência completa.
+- `docs/QUICKSTART.md` contém o passo a passo inicial para subir o ambiente e validar a infraestrutura.
+- `docs/EXERCISES.md` contém os exercícios detalhados, que exploram catálogo, joins, lakehouse, versionamento, otimização de queries e cenários de integração.
 
-### **Nível 1 — Entender Catalogs (30 min)**
+### Principais tópicos de estudo
 
-Subir ambiente, validar conectividade, explorar TPCH.
+- Conceitos de **federated query** com Trino
+- Configuração e uso de **Iceberg + Nessie + MinIO**
+- Versionamento de dados e **time travel**
+- Conectores SQL para **PostgreSQL** e **TPCH**
+- Boas práticas de arquitetura de dados open-source
 
-Referência: [QUICKSTART.md](docs/QUICKSTART.md)
-
-### **Nível 2 — SQL Distribuído (1h)**
-
-Exercises 1-4: dataset inspection, filtering, aggregations.
-
-Referência: [EXERCISES.md](docs/EXERCISES.md) ex 1-4
-
-### **Nível 3 — Joins e Dimensões (1h30min)**
-
-Exercises 5-6: dimensional queries, revenue analysis, fact/dimension concepts.
-
-Referência: [EXERCISES.md](docs/EXERCISES.md) ex 5-6
-
-### **Nível 4 — Lakehouse Prático (2h)**
-
-Exercises 12: criar schema Iceberg, CTAS, inserts, snapshots.
-
-Referência: [EXERCISES.md](docs/EXERCISES.md) ex 12
-
-### **Nível 5 — Query Federation (2h)**
-
-Exercises 13: joins entre múltiplas datasources.
-
-Referência: [EXERCISES.md](docs/EXERCISES.md) ex 13
-
-### **Nível 6 — Query Plans (1h30min)**
-
-Exercises 10-11: EXPLAIN analysis, query optimization.
-
-Referência: [EXERCISES.md](docs/EXERCISES.md) ex 10-11
-
-### **Nível 7 — Desafio Integrador (3h)**
-
-Exercise 14: design query realista combinando todos os conceitos.
-
-Referência: [EXERCISES.md](docs/EXERCISES.md) ex 14
+> Para conteúdo de exercício e prática, use `docs/EXERCISES.md`. Esta seção existe para orientar o uso do repositório, não para duplicar o material dos exercícios.
 
 ---
 
@@ -504,7 +519,7 @@ Este laboratório **ensina arquitetura Lakehouse real, mas não é produção**.
 ### **Segurança**
 
 - ⚠️ Sem TLS (http apenas)
-- ⚠️ Credenciais em env (admin/admin123)
+- ⚠️ Credenciais padrão de desenvolvimento estão em `.env`
 - ❌ Sem RBAC/LDAP/OAuth
 
 ---

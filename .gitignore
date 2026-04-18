@@ -2,4 +2,9 @@
 
 .env
 
+# Generated config files (from templates)
+single/etc/config.properties
+single/etc/catalog/iceberg.properties
+single/etc/catalog/postgresql.properties
+
 .codespaces/*
