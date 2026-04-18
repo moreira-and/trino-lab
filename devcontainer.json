@@ -1,0 +1,15 @@
+{
+  "name": "trino-dev",
+  "forwardPorts": [8080, 8081],
+  "portsAttributes": {
+    "8080": {
+      "label": "Trino single-node",
+      "onAutoForward": "notify"
+    },
+    "8081": {
+      "label": "Trino multi-node coordinator",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "mkdir -p .codespaces/trino/single-data .codespaces/trino/multi-coordinator-data"
+}

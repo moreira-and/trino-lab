@@ -1,0 +1,14 @@
+services:
+  trino-single:
+    image: trinodb/trino:477
+    container_name: trino-single
+    hostname: trino-single
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ./single/etc:/etc/trino
+      - ./.codespaces/trino:/data/trino
+
+    restart: unless-stopped
