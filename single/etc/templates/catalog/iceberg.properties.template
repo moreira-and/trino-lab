@@ -1,0 +1,13 @@
+connector.name=iceberg
+iceberg.catalog.type=nessie
+
+iceberg.nessie-catalog.uri=${NESSIE_CATALOG_URI}
+iceberg.nessie-catalog.ref=${ICEBERG_REF}
+iceberg.nessie-catalog.default-warehouse-dir=${ICEBERG_WAREHOUSE_DIR}
+
+fs.native-s3.enabled=true
+s3.endpoint=${S3_ENDPOINT}
+s3.path-style-access=true
+s3.aws-access-key=${S3_AWS_ACCESS_KEY}
+s3.aws-secret-key=${S3_AWS_SECRET_KEY}
+s3.region=${S3_REGION}

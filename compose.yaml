@@ -3,11 +3,11 @@ services:
     image: postgres:16
     container_name: postgres-lab
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./.postgres/init:/docker-entrypoint-initdb.d
@@ -15,13 +15,13 @@ services:
   minio:
     image: minio/minio:latest
     container_name: minio-lab
-    command: server /data --console-address ":9001"
+    command: server /data --console-address ":${MINIO_CONSOLE_PORT}"
     environment:
-      MINIO_ROOT_USER: admin
-      MINIO_ROOT_PASSWORD: admin12345
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:${MINIO_CONSOLE_PORT}"
     volumes:
       - minio_data:/data
 
@@ -33,7 +33,7 @@ services:
       - /bin/sh
       - -c
       - |
-        until mc alias set local http://minio:9000 admin admin12345; do sleep 2; done
+        until mc alias set local http://${MINIO_HOST}:${MINIO_PORT} ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}; do sleep 2; done
         mc mb -p local/lakehouse || true
         exit 0
 
@@ -41,21 +41,21 @@ services:
     image: ghcr.io/projectnessie/nessie:latest
     container_name: nessie
     ports:
-      - "19120:19120"
+      - "${NESSIE_PORT}:${NESSIE_HTTP_PORT}"
     environment:
-      QUARKUS_HTTP_PORT: 19120
-      NESSIE_VERSION_STORE_TYPE: JDBC
-      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://postgres:5432/nessie
-      QUARKUS_DATASOURCE_USERNAME: admin
-      QUARKUS_DATASOURCE_PASSWORD: admin123
+      QUARKUS_HTTP_PORT: ${NESSIE_HTTP_PORT}
+      NESSIE_VERSION_STORE_TYPE: ${NESSIE_VERSION_STORE_TYPE}
+      QUARKUS_DATASOURCE_JDBC_URL: ${NESSIE_DATASOURCE_JDBC_URL}
+      QUARKUS_DATASOURCE_USERNAME: ${NESSIE_DATASOURCE_USERNAME}
+      QUARKUS_DATASOURCE_PASSWORD: ${NESSIE_DATASOURCE_PASSWORD}
     depends_on:
       - postgres
 
   trino:
-    image: trinodb/trino:477
+    image: trinodb/trino:${TRINO_VERSION}
     container_name: trino-single
     ports:
-      - "8080:8080"
+      - "${TRINO_SINGLE_PORT}:8080"
     volumes:
       - ./single/etc:/etc/trino
     depends_on:

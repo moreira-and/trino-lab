@@ -1,9 +1,9 @@
 coordinator=true
 node-scheduler.include-coordinator=true
 
-http-server.http.port=8080
+http-server.http.port=${TRINO_HTTP_PORT}
 
-discovery.uri=http://localhost:8080
+discovery.uri=http://localhost:${TRINO_HTTP_PORT}
 
 query.max-memory=1GB
 query.max-memory-per-node=512MB
