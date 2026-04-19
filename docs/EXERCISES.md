@@ -1,5 +1,10 @@
 # EXERCISES
 
+> **Já fez o setup?** Comece em [QUICKSTART.md](QUICKSTART.md) primeiro.  
+> Depois destes exercícios, confira [EXERCISES_2.md](EXERCISES_2.md) para cenários aplicados.
+
+---
+
 ## Objective
 
 Use the `tpch` catalog to practice Trino fundamentals with a realistic analytical dataset.
@@ -45,6 +50,15 @@ Example:
 
 ```sql
 tpch.tiny.orders
+
+DESCRIBE tpch.tiny.orders;
+
+SELECT *
+FROM tpch.information_schema.columns
+WHERE table_schema = 'tiny'
+  AND table_name = 'orders';
+
+SHOW STATS FOR tpch.tiny.orders;
 ```
 
 Where:
@@ -323,6 +337,25 @@ JOIN tpch.tiny.customer c
     ON o.custkey = c.custkey
 JOIN tpch.tiny.nation n
     ON c.nationkey = n.nationkey
+
+WHERE o.orderstatus = 'O'
+GROUP BY n.name;
+```
+
+```sql
+EXPLAIN ANALYZE
+SELECT
+    n.name AS nation,
+    SUM(l.extendedprice * (1 - l.discount)) AS net_revenue
+FROM tpch.tiny.lineitem l
+JOIN tpch.tiny.orders o
+    ON l.orderkey = o.orderkey
+JOIN tpch.tiny.customer c
+    ON o.custkey = c.custkey
+JOIN tpch.tiny.nation n
+    ON c.nationkey = n.nationkey
+
+WHERE o.orderstatus = 'O'
 GROUP BY n.name;
 ```
 
@@ -515,6 +548,15 @@ You can consider this module complete when you are able to:
 - explain `catalog.schema.table`
 - distinguish fact and dimension tables in TPC-H
 - build multi-join analytical queries in Trino
+
+---
+
+## Próximos passos
+
+- **Praticar em cenários de negócio?** Continue em [EXERCISES_2.md](EXERCISES_2.md).
+- **Otimizar queries?** Acesse [QUERY_TUNING.md](QUERY_TUNING.md) para aprender performance.
+- **Testar suas queries?** Veja [QUERY_TESTING.md](QUERY_TESTING.md).
+- **Volta ao índice:** [README.md](README.md)
 - interpret basic `EXPLAIN` output
 - move data from `tpch` into Iceberg
 - explain why Trino + Iceberg + PostgreSQL + MinIO is a lakehouse-style architecture

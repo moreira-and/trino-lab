@@ -1,5 +1,10 @@
 # Trino Lab — SQL Review Using TPC-H as Salesforce CRM Analogy
 
+> **Venha do EXERCISES.md?** Este documento aplica os conceitos em cenários de negócio realistas.  
+> **Quer otimizar o desempenho?** Consulte [QUERY_TUNING.md](QUERY_TUNING.md) após os exercícios.
+
+---
+
 ## Objective
 
 Use the `tpch` catalog as a **controlled business abstraction** to simulate common CRM / Salesforce analytics scenarios.
@@ -20,15 +25,15 @@ It is a training model to sharpen:
 
 # Conceptual Mapping
 
-| TPC-H | CRM Analogy |
-|---|---|
-| customer | Account |
-| orders | Opportunity / Closed Deal |
-| lineitem | OpportunityLineItem |
-| part | Product |
-| nation | Territory |
-| region | Region |
-| clerk | Sales Owner |
+| TPC-H    | CRM Analogy               |
+| -------- | ------------------------- |
+| customer | Account                   |
+| orders   | Opportunity / Closed Deal |
+| lineitem | OpportunityLineItem       |
+| part     | Product                   |
+| nation   | Territory                 |
+| region   | Region                    |
+| clerk    | Sales Owner               |
 
 ---
 
@@ -39,13 +44,13 @@ Run:
 ```sql
 SHOW CATALOGS;
 SHOW TABLES FROM tpch.sf1;
-````
+```
 
 Expected:
 
-* tpch
-* postgresql
-* iceberg
+- tpch
+- postgresql
+- iceberg
 
 ---
 
@@ -62,14 +67,15 @@ Find top accounts by balance.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `customer`
-* [ ] Orders descending
-* [ ] Returns top 20
-* [ ] Includes account name
+- [ ] Uses `customer`
+- [ ] Orders descending
+- [ ] Returns top 20
+- [ ] Includes account name
 
 ---
 
@@ -86,13 +92,14 @@ Count customers by country.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Joins `customer` + `nation`
-* [ ] Uses `COUNT(*)`
-* [ ] Grouped by country
+- [ ] Joins `customer` + `nation`
+- [ ] Uses `COUNT(*)`
+- [ ] Grouped by country
 
 ---
 
@@ -109,13 +116,14 @@ Summarize orders by status.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `orders`
-* [ ] Aggregates by `orderstatus`
-* [ ] Includes count and amount
+- [ ] Uses `orders`
+- [ ] Aggregates by `orderstatus`
+- [ ] Includes count and amount
 
 ---
 
@@ -132,13 +140,14 @@ Calculate monthly revenue.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `date_trunc`
-* [ ] Uses `SUM(totalprice)`
-* [ ] Ordered by month
+- [ ] Uses `date_trunc`
+- [ ] Uses `SUM(totalprice)`
+- [ ] Ordered by month
 
 ---
 
@@ -155,12 +164,13 @@ Calculate monthly average order value.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `AVG(totalprice)`
-* [ ] Monthly grouping
+- [ ] Uses `AVG(totalprice)`
+- [ ] Monthly grouping
 
 ---
 
@@ -177,13 +187,14 @@ Show revenue per customer.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Join `customer` + `orders`
-* [ ] Uses `SUM(totalprice)`
-* [ ] Sorted descending
+- [ ] Join `customer` + `orders`
+- [ ] Uses `SUM(totalprice)`
+- [ ] Sorted descending
 
 ---
 
@@ -200,13 +211,14 @@ Find customers with no orders.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] LEFT JOIN
-* [ ] Null filter
-* [ ] Returns only inactive accounts
+- [ ] LEFT JOIN
+- [ ] Null filter
+- [ ] Returns only inactive accounts
 
 ---
 
@@ -223,13 +235,14 @@ Rank products by sales value.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `lineitem`
-* [ ] Aggregates by `partkey`
-* [ ] Sorted descending
+- [ ] Uses `lineitem`
+- [ ] Aggregates by `partkey`
+- [ ] Sorted descending
 
 ---
 
@@ -246,12 +259,13 @@ Calculate net revenue considering discount.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `(1 - discount)`
-* [ ] Uses `extendedprice`
+- [ ] Uses `(1 - discount)`
+- [ ] Uses `extendedprice`
 
 ---
 
@@ -268,12 +282,13 @@ Rank customers by revenue.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses CTE or subquery
-* [ ] Uses `RANK()` window function
+- [ ] Uses CTE or subquery
+- [ ] Uses `RANK()` window function
 
 ---
 
@@ -290,13 +305,14 @@ Find latest order per customer.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `ROW_NUMBER()`
-* [ ] Partition by customer
-* [ ] Latest date first
+- [ ] Uses `ROW_NUMBER()`
+- [ ] Partition by customer
+- [ ] Latest date first
 
 ---
 
@@ -313,12 +329,13 @@ Monthly cumulative revenue.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses window `SUM() OVER`
-* [ ] Ordered by month
+- [ ] Uses window `SUM() OVER`
+- [ ] Ordered by month
 
 ---
 
@@ -335,12 +352,13 @@ Show revenue by region.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `customer`, `nation`, `region`, `orders`
-* [ ] Aggregates revenue
+- [ ] Uses `customer`, `nation`, `region`, `orders`
+- [ ] Aggregates revenue
 
 ---
 
@@ -357,13 +375,14 @@ Persist raw orders into Iceberg.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Creates schema
-* [ ] Uses CTAS
-* [ ] Reads from `tpch.sf1.orders`
+- [ ] Creates schema
+- [ ] Uses CTAS
+- [ ] Reads from `tpch.sf1.orders`
 
 ---
 
@@ -380,12 +399,13 @@ Create opportunities table.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Renames columns semantically
-* [ ] Uses Iceberg schema
+- [ ] Renames columns semantically
+- [ ] Uses Iceberg schema
 
 ---
 
@@ -402,12 +422,13 @@ Create monthly revenue mart.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Reads silver layer
-* [ ] Aggregated monthly
+- [ ] Reads silver layer
+- [ ] Aggregated monthly
 
 ---
 
@@ -424,13 +445,14 @@ Join Iceberg with PostgreSQL.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses two catalogs
-* [ ] Uses join
-* [ ] Returns rows successfully
+- [ ] Uses two catalogs
+- [ ] Uses join
+- [ ] Returns rows successfully
 
 ---
 
@@ -447,12 +469,13 @@ Explain a join query.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Uses `EXPLAIN`
-* [ ] Can describe scan + join behavior
+- [ ] Uses `EXPLAIN`
+- [ ] Can describe scan + join behavior
 
 ---
 
@@ -469,12 +492,13 @@ Compare `SELECT *` vs selected columns.
 ## Query Space
 
 ```sql
+
 ```
 
 ## Validation Checklist
 
-* [ ] Two explain plans
-* [ ] Can explain why projection matters
+- [ ] Two explain plans
+- [ ] Can explain why projection matters
 
 ---
 
@@ -501,9 +525,9 @@ Prepare 3 findings after exercises.
 
 ## Validation Checklist
 
-* [ ] One revenue insight
-* [ ] One customer insight
-* [ ] One performance insight
+- [ ] One revenue insight
+- [ ] One customer insight
+- [ ] One performance insight
 
 ---
 
@@ -524,11 +548,18 @@ Rate yourself from 1 to 5:
 
 ---
 
+## Próximos passos
+
+- **Garantir qualidade das suas queries?** Veja [QUERY_TESTING.md](QUERY_TESTING.md).
+- **Otimizar performance?** Acesse [QUERY_TUNING.md](QUERY_TUNING.md) para aprender técnicas avançadas.
+- **Monitorar e priorizar por impacto?** Consulte [OBSERVABILITY.md](OBSERVABILITY.md).
+- **Volta ao índice:** [README.md](README.md)
+
 # If You Can Explain These, You’re Strong
 
-* Difference between Account / Opportunity / LineItem grain
-* Why Bronze / Silver / Gold exist
-* Why Trino matters
-* Why `SELECT *` is lazy engineering
-* How window functions help business analytics
-* How to read a join query critically
+- Difference between Account / Opportunity / LineItem grain
+- Why Bronze / Silver / Gold exist
+- Why Trino matters
+- Why `SELECT *` is lazy engineering
+- How window functions help business analytics
+- How to read a join query critically

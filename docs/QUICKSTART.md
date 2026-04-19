@@ -1,5 +1,10 @@
 # Fluxo completo desde o início usando `docker exec -it`
 
+> **Começando por aqui?** Este é o primeiro passo para validar seu ambiente Trino.  
+> Após concluir, prossiga para [EXERCISES.md](EXERCISES.md) para praticar SQL básico.
+
+---
+
 ## 1. Entrar no CLI do Trino
 
 ```bash id="n2d0r4"
@@ -207,3 +212,11 @@ ON a.id = b.id;
 ```
 
 Se isso funcionar, seu laboratório está legítimo.
+
+---
+
+## Próximos passos
+
+- **Praticar SQL?** Veja [EXERCISES.md](EXERCISES.md) para aprender trabalhar com `tpch` e fundamentos SQL.
+- **Trabalhar com cenários realistas?** Acesse [EXERCISES_2.md](EXERCISES_2.md) com analogias CRM.
+- **Volta ao índice:** [README.md](README.md)
